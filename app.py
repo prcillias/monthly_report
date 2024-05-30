@@ -278,10 +278,6 @@ def add_bg(p, page):
 @app.route('/')
 def home():
     tdata = TransformerData.query.with_entities(TransformerData.nama).distinct().all()
-    row_to_delete = TransformerSettings.query.filter_by(nama='B&D').first()
-    if row_to_delete:
-        db.session.delete(row_to_delete)
-        db.session.commit()
 
     return render_template('home.html', tdata=tdata)
 
