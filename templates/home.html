@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" id="theme-styles">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 15.5px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .navbar-nav .nav-item {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-nav .nav-item {
+            margin-right: 20px;
+        }
+        .navbar {
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        .navbar-nav .nav-link {
+            color: #333;
+            padding: 10px 20px;
+        }
+
+        .navbar-nav .nav-link.active {
+            font-weight: bold;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-nav .nav-item:hover {
+            /* background-color: rgba(255, 228, 207, 0.2);
+            border-radius: 10px;
+            height: 33px; */
+            font-weight: bold;
+            
+        }
+        .navbar-nav .nav-item:hover .material-symbols-outlined {
+            font-variation-settings: 'wght' 400;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            /* align-items: center; */
+            height: 86vh;
+            margin-top: 15px;
+        }
+        .form-container {
+            display: flex;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-left {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .form-right {
+            flex: 2;
+            padding: 20px;
+            /* display: flex; */
+            /* flex-wrap: wrap; */
+            background-color: #fff;
+            overflow: auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input.form-control tdata,
+        input.form-control tsettings {
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-right: 10px;
+        }
+
+        .col label {
+            margin-top: 3px;
+        }
+
+        .col input {
+            margin-bottom: 7px;
+        }
+
+        .active-icon {
+            font-variation-settings: 'wght' 400;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+
+    </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 " style="display: flex; align-items: center;">
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined active-icon" style="display: inline-block; vertical-align: middle;">list_alt_add</i>
+                            <a class="nav-link active" aria-current="page" href="#">Input Data</a>
+                        </li>
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined" style="display: inline-block; vertical-align: middle;">upload_file</i>
+                            <a class="nav-link" href="/upload">Upload</a>
+                        </li>
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined" style="display: inline-block; vertical-align: middle;">download</i>
+                            <a class="nav-link" href="/download">Download</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container">
+            <div class="form-container">
+                <div class="form-left">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <h4 id="judul_details">Details</h4>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-primary" id="addNewCust">Add New</button>
+                            <button type="button" class="btn btn-primary d-none" id="cancelAddCust">Cancel</button>
+                        </div>
+                    </div>
+
+                    <select class="form-select" name="dropdown" id="dropdown">
+                        <option selected>Choose a customer</option>
+                        {% for data in tdata %}
+                        <option value="{{ data.nama }}">{{ data.nama }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="input-group mb-3 mt-2" style="display: none;">
+                        <input type="text" class="form-control" id="inputNama" placeholder="Input customer name">
+                    </div>
+
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-success" id="search" style="width: 100%;">Search</button>
+                        <button type="button" class="btn btn-success d-none" id="add" style="width: 100%;">Add</button>
+                    </div>
+
+                </div>
+                <div class="form-right">
+                    <div class="row">
+                        <div class="col">
+                            <h4 id="judul_tdata">Transformer Data</h4>
+                        </div>
+                        <div class="col text-end">
+
+                            <button type="button" class="btn btn-primary d-none" id="edit">Edit</button>
+                            <button type="button" class="btn btn-primary d-none" id="save">Save</button>
+                            <button type="button" class="btn btn-primary d-none" id="cancel">Cancel</button>
+                        </div>
+                        
+                    </div>
+                    <div class="row row-tdata mt-3">
+                        <div class="col">
+                            <label for="serial_number">Serial Number:</label>
+                            <input type="text" class="form-control tdata" id="serial_number" name="serial_number" readonly>
+                            
+                            <label for="impedance">Impedance:</label>
+                            <input type="text" class="form-control tdata" id="impedance" name="impedance" readonly>
+
+                            <label for="rated_power">Rated Power:</label>
+                            <input type="text" class="form-control tdata" id="rated_power" name="rated_power" readonly>
+
+                            <label for="frequency">Frequency:</label>
+                            <input type="text" class="form-control tdata" id="frequency" name="frequency" readonly>
+
+                            <label for="rated_high_voltage">Rated High Voltage:</label>
+                            <input type="text" class="form-control tdata" id="rated_high_voltage" name="rated_high_voltage" readonly>
+
+                            <label for="rated_low_voltage">Rated Low Voltage:</label>
+                            <input type="text" class="form-control tdata" id="rated_low_voltage" name="rated_low_voltage" readonly>
+
+                            <label for="rated_current_high_voltage">Rated Current High Voltage:</label>
+                            <input type="text" class="form-control tdata" id="rated_current_high_voltage" name="rated_current_high_voltage" readonly>
+
+                            <label for="rated_current_low_voltage">Rated Current Low Voltage:</label>
+                            <input type="text" class="form-control tdata" id="rated_current_low_voltage" name="rated_current_low_voltage" readonly>
+
+                            <label for="vector_group">Vector Group:</label>
+                            <input type="text" class="form-control tdata" id="vector_group" name="vector_group" readonly>
+
+                            <label for="phase">Phase:</label>
+                            <input type="text" class="form-control tdata" id="phase" name="phase" readonly>
+
+                            <label for="no_load_loss">No Load Loss:</label>
+                            <input type="text" class="form-control tdata" id="no_load_loss" name="no_load_loss" readonly>
+
+                        </div>
+                        <div class="col">
+                            <label for="full_load_loss">Full Load Loss:</label>
+                            <input type="text" class="form-control tdata" id="full_load_loss" name="full_load_loss" readonly>
+
+                            <label for="top_oil_temp_rise_lv">Top Oil Temp. Rise LV:</label>
+                            <input type="text" class="form-control tdata" id="top_oil_temp_rise_lv" name="top_oil_temp_rise_lv" readonly>
+
+                            <label for="top_oil_temp_rise_hv">Top Oil Temp. Rise HV:</label>
+                            <input type="text" class="form-control tdata" id="top_oil_temp_rise_hv" name="top_oil_temp_rise_hv" readonly>
+
+                            <label for="avg_winding_temp_rise_lv">Average Winding Temp. Rise LV:</label>
+                            <input type="text" class="form-control tdata" id="avg_winding_temp_rise_lv" name="avg_winding_temp_rise_lv" readonly>
+
+                            <label for="avg_winding_temp_rise_hv">Average Winding Temp. Rise HV:</label>
+                            <input type="text" class="form-control tdata" id="avg_winding_temp_rise_hv" name="avg_winding_temp_rise_hv" readonly>
+
+                            <label for="gradient_lv">Gradient LV:</label>
+                            <input type="text" class="form-control tdata" id="gradient_lv" name="gradient_lv" readonly>
+
+                            <label for="gradient_hv">Gradient HV:</label>
+                            <input type="text" class="form-control tdata" id="gradient_hv" name="gradient_hv" readonly>
+
+                            <label for="cooling_mode">Cooling Mode:</label>
+                            <input type="text" class="form-control tdata" id="cooling_mode" name="cooling_mode" readonly>
+
+                            <label for="ct_ratio">CT Rasio:</label>
+                            <input type="text" class="form-control tdata" id="ct_ratio" name="ct_ratio" readonly>
+
+                            <label for="hotspot_factor">Hotspot Factor:</label>
+                            <input type="text" class="form-control tdata" id="hotspot_factor" name="hotspot_factor" readonly>
+
+                            <label for="k_rated">K-Rated:</label>
+                            <input type="text" class="form-control tdata" id="k_rated" name="k_rated" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h4 id="judul_tsettings">Transformer Settings</h4>
+                    </div>
+                    <div class="row row-tsettings mt-3">
+                        <!-- Column 1 -->
+                        <div class="col">
+                            <label for="voltage_low_trip">Voltage Low Trip:</label>
+                            <input type="text" class="form-control tsettings" id="voltage_low_trip" name="voltage_low_trip" readonly>
+
+                            <label for="freq_low_trip">Freq. Low Trip:</label>
+                            <input type="text" class="form-control tsettings" id="freq_low_trip" name="freq_low_trip" readonly>
+
+                            <label for="thdi_trip">THDI Trip:</label>
+                            <input type="text" class="form-control tsettings" id="thdi_trip" name="thdi_trip" readonly>
+
+                            <label for="top_oil_high_alarm">Top Oil High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="top_oil_high_alarm" name="top_oil_high_alarm" readonly>
+
+                            <label for="pf_low_alarm">PF Low Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="pf_low_alarm" name="pf_low_alarm" readonly> 
+                            
+                            <label for="i_neutral_high_alarm">I Neutral High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="i_neutral_high_alarm" name="i_neutral_high_alarm" readonly>
+                            
+                            <label for="pressure_high_alarm">Pressure High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="pressure_high_alarm" name="pressure_high_alarm" readonly>
+                        </div>
+
+                        <!-- Column 2 -->
+                        <div class="col">
+                            <label for="voltage_low_alarm">Voltage Low Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="voltage_low_alarm" name="voltage_low_alarm" readonly>
+
+                            <label for="freq_low_alarm">Freq. Low Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="freq_low_alarm" name="freq_low_alarm" readonly>
+
+                            <label for="thdi_alarm">THDI Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="thdi_alarm" name="thdi_alarm" readonly>
+
+                            <label for="top_oil_high_trip">Top Oil High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="top_oil_high_trip" name="top_oil_high_trip" readonly>
+
+                            <label for="pf_low_trip">PF Low Trip:</label>
+                            <input type="text" class="form-control tsettings" id="pf_low_trip" name="pf_low_trip" readonly>
+
+                            <label for="i_neutral_high_trip">I Neutral High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="i_neutral_high_trip" name="i_neutral_high_trip" readonly>
+
+                            <label for="pressure_high_trip">Pressure High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="pressure_high_trip" name="pressure_high_trip" readonly>
+                            
+                        </div>
+
+                        <!-- Column 3 -->
+                        <div class="col">
+                            <label for="voltage_high_trip">Voltage High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="voltage_high_trip" name="voltage_high_trip" readonly>
+
+                            <label for="freq_high_alarm">Freq. High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="freq_high_alarm" name="freq_high_alarm" readonly>
+
+                            <label for="thdv_alarm">THDV Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="thdv_alarm" name="thdv_alarm" readonly>
+
+                            <label for="wti_high_alarm">WTI High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="wti_high_alarm" name="wti_high_alarm" readonly>
+     
+                            <label for="current_high_alarm">Current High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="current_high_alarm" name="current_high_alarm" readonly>
+
+                            <label for="bustemp_high_alarm">BusTemp. High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="bustemp_high_alarm" name="bustemp_high_alarm" readonly>
+                            
+                            <label for="unbalance_high_alarm">Unbalance High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="unbalance_high_alarm" name="unbalance_high_alarm" readonly>
+                            
+                        </div>
+
+                        <!-- Column 4 -->
+                        <div class="col">
+                            <label for="voltage_high_alarm">Voltage High Alarm:</label>
+                            <input type="text" class="form-control tsettings" id="voltage_high_alarm" name="voltage_high_alarm" readonly>
+
+                            <label for="freq_high_trip">Freq. High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="freq_high_trip" name="freq_high_trip" readonly>    
+
+                            <label for="thdv_trip">THDV Trip:</label>
+                            <input type="text" class="form-control tsettings" id="thdv_trip" name="thdv_trip" readonly>
+
+                            <label for="wti_high_trip">WTI High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="wti_high_trip" name="wti_high_trip" readonly>
+
+                            <label for="current_high_trip">Current High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="current_high_trip" name="current_high_trip" readonly>
+
+                            <label for="bustemp_high_trip">BusTemp. High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="bustemp_high_trip" name="bustemp_high_trip" readonly>
+
+                            <label for="unbalance_high_trip">Unbalance High Trip:</label>
+                            <input type="text" class="form-control tsettings" id="unbalance_high_trip" name="unbalance_high_trip" readonly>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function fillFormData(tdata, tsettings) {
+                $("#serial_number").val(tdata.serial_number);
+                $("#impedance").val(tdata.impedance);
+                $("#rated_power").val(tdata.rated_power);
+                $("#frequency").val(tdata.frequency);
+                $("#rated_high_voltage").val(tdata.rated_high_voltage);
+                $("#rated_low_voltage").val(tdata.rated_low_voltage);
+                $("#rated_current_high_voltage").val(tdata.rated_current_high_voltage);
+                $("#rated_current_low_voltage").val(tdata.rated_current_low_voltage);
+                $("#vector_group").val(tdata.vector_group);
+                $("#phase").val(tdata.phase);
+                $("#no_load_loss").val(tdata.no_load_loss);
+                $("#full_load_loss").val(tdata.full_load_loss);
+                $("#top_oil_temp_rise_lv").val(tdata.top_oil_temp_rise_lv);
+                $("#top_oil_temp_rise_hv").val(tdata.top_oil_temp_rise_hv);
+                $("#avg_winding_temp_rise_lv").val(tdata.avg_winding_temp_rise_lv);
+                $("#avg_winding_temp_rise_hv").val(tdata.avg_winding_temp_rise_hv);
+                $("#gradient_lv").val(tdata.gradient_lv);
+                $("#gradient_hv").val(tdata.gradient_hv);
+                $("#cooling_mode").val(tdata.cooling_mode);
+                $("#ct_ratio").val(tdata.ct_ratio);
+                $("#hotspot_factor").val(tdata.hotspot_factor);
+                $("#k_rated").val(tdata.k_rated);
+
+                $("#voltage_low_trip").val(tsettings.voltage_low_trip);
+                $("#voltage_low_alarm").val(tsettings.voltage_low_alarm);
+                $("#voltage_high_alarm").val(tsettings.voltage_high_alarm);
+                $("#voltage_high_trip").val(tsettings.voltage_high_trip);
+                $("#freq_low_trip").val(tsettings.freq_low_trip);
+                $("#freq_low_alarm").val(tsettings.freq_low_alarm);
+                $("#freq_high_alarm").val(tsettings.freq_high_alarm);
+                $("#freq_high_trip").val(tsettings.freq_high_trip);
+                $("#thdi_trip").val(tsettings.thdi_trip);
+                $("#thdi_alarm").val(tsettings.thdi_alarm);
+                $("#thdv_alarm").val(tsettings.thdv_alarm);
+                $("#thdv_trip").val(tsettings.thdv_trip);
+                $("#top_oil_high_alarm").val(tsettings.top_oil_high_alarm);
+                $("#top_oil_high_trip").val(tsettings.top_oil_high_trip);
+                $("#wti_high_alarm").val(tsettings.wti_high_alarm);
+                $("#wti_high_trip").val(tsettings.wti_high_trip);
+                $("#pf_low_alarm").val(tsettings.pf_low_alarm);
+                $("#pf_low_trip").val(tsettings.pf_low_trip);
+                $("#current_high_alarm").val(tsettings.current_high_alarm);
+                $("#current_high_trip").val(tsettings.current_high_trip);
+                $("#i_neutral_high_alarm").val(tsettings.i_neutral_high_alarm);
+                $("#i_neutral_high_trip").val(tsettings.i_neutral_high_trip);
+                $("#bustemp_high_alarm").val(tsettings.bustemp_high_alarm);
+                $("#bustemp_high_trip").val(tsettings.bustemp_high_trip);
+                $("#pressure_high_alarm").val(tsettings.pressure_high_alarm);
+                $("#pressure_high_trip").val(tsettings.pressure_high_trip);
+                $("#unbalance_high_alarm").val(tsettings.unbalance_high_alarm);
+                $("#unbalance_high_trip").val(tsettings.unbalance_high_trip);
+            }
+
+            function getTheData(selectedCompany) {
+                $.ajax({
+                    url: "/get-data",
+                    type: "POST",
+                    data: {
+                        selectedCompany: selectedCompany,
+                        // date: date
+                    },
+                    success: function(result) {
+                        if (result.status == 'success') {
+                            originalData = result.data
+                            fillFormData(originalData.tdata, originalData.tsettings);
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Data not found!',
+                                text: 'No data found',
+                                timer: 3000
+                            });
+                        }
+                    }
+                });
+            }
+
+            function updateChangedValues(inputId, value, dataKey, changedValues, originalData) {
+                var isParExists = changedValues.findIndex(function(item) {
+                    return item.par === inputId;
+                });
+
+                if (value != originalData[dataKey][inputId]) {
+                    if (isParExists !== -1) {
+                        changedValues[isParExists].value = value;
+                    } else {
+                        changedValues.push({ data: dataKey, par: inputId, value: value });
+                    }
+                } else {
+                    changedValues = changedValues.filter(function(item) {
+                        return item.par !== inputId;
+                    });
+                }
+            }
+
+            $(document).ready(function(){
+                
+                var originalData = {};  
+                var changedValues = [];
+                var trafo_data = {
+                    'tdata': {},
+                    'tsettings': {}
+                };
+                var selectedCompany = $('#dropdown').val()
+
+                // Search
+                $("#search").on("click", function() {
+                    selectedCompany = $('#dropdown').val()
+
+                    if (selectedCompany != 'Choose a customer') {
+
+                        $.ajax({
+                            url: "/get-data",
+                            type: "POST",
+                            data: {
+                                selectedCompany: selectedCompany,
+                            },
+                            success: function(result) {
+                                if (result.status == 'success') {
+                                    $("#edit").removeClass("d-none");
+                                    // $("#insert").removeClass("d-none");
+                                    originalData = result.data
+                                    fillFormData(originalData.tdata, originalData.tsettings);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'question',
+                                        title: 'Data not found!',
+                                        text: 'Show latest data instead?',
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Yes',
+                                        cancelButtonText: 'No'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            $("#edit").removeClass("d-none");
+                                            // $("#insert").removeClass("d-none");
+                                            $.ajax({
+                                                url: "/get-latest-data",
+                                                type: "POST",
+                                                data: {
+                                                    selectedCompany: selectedCompany
+                                                },
+                                                success: function(result) {
+                                                    if (result.status == 'success') {
+                                                        originalData = result.data
+                                                        fillFormData(originalData.tdata, originalData.tsettings);
+                                                        // $("#inputDate").val(result.date);
+                                                    } else {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'Error',
+                                                            text: 'Failed to load data',
+                                                        })
+                                                    }
+                                                }
+                                            });
+                                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                            $("#edit").addClass("d-none");
+                                            // $("#insert").addClass("d-none");
+                                            $('input').val('');
+                                        }
+                                    });
+                                }
+
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Incomplete Details',
+                            text: 'Please complete the customer name and date fields'
+                        })
+                        $("#edit").addClass("d-none");
+                        // $("#insert").addClass("d-none");
+                        $('input').val('');
+                    }
+                })
+
+                // Insert
+                // $("#insert").on("click", function() { 
+                //     $("#judul_tdata").text("Insert Transformer Data");
+                //     $("#judul_tsettings").text("Insert Transformer Settings");
+                //     $("#insert").addClass("d-none");
+                //     $("#edit").addClass("d-none");
+                //     $("#addNewCust").addClass("d-none");
+                //     $("#search").addClass("d-none");
+                //     $("#save").removeClass("d-none"); 
+                //     $("#cancel").removeClass("d-none"); 
+                //     $('.form-control.tdata').val(''); 
+                //     $('.form-control.tsettings').val('');
+                //     $(".tdata, .tsettings").removeAttr("readonly");
+                //     $("#dropdown").prop("disabled", true);
+                //     selectedCompany = $('#dropdown').val()
+                //     // inputDate = $("#inputDate").val()
+                //     // $("#inputDate").val('')
+
+
+                //     $("#cancel").on("click", function() { 
+                //         $("#judul_tdata").text("Transformer Data");
+                //         $("#judul_tsettings").text("Transformer Settings");
+                //         $("#edit").removeClass("d-none");
+                //         $("#insert").removeClass("d-none");
+                //         $("#addNewCust").removeClass("d-none");
+                //         $("#save").addClass("d-none"); 
+                //         $("#cancel").addClass("d-none"); 
+                //         $(".tdata, .tsettings").attr("readonly", true);
+                //         // $("#inputDate").val(inputDate)
+                //         $("#dropdown").prop("disabled", false);
+                //         getTheData(selectedCompany)
+
+                //     })
+
+                //     $("#save").on("click", function() {
+                //         selectedCompany = $('#dropdown').val()
+                //         // inputDate = $("#inputDate").val()
+
+                //         var allInputsFilled = true;
+                        
+                //         // if (!inputDate) {
+                //         //     Swal.fire({
+                //         //         icon: 'warning',
+                //         //         title: 'Date not selected',
+                //         //         text: 'Please select a date'
+                //         //     })
+                //         //     return;
+                //         // }
+
+                //         $(".tdata, .tsettings").each(function() {
+                //             if (!$(this).val()) {
+                //                 allInputsFilled = false;
+                //                 return false;
+                //             } else {
+                //                 var par = $(this).attr('id');
+                //                 var value = $(this).val();
+                                
+                //                 if ($(this).hasClass("tdata")) {
+                //                     trafo_data['tdata'][par] = value;
+                //                 } else {
+                //                     trafo_data['tsettings'][par] = value;
+                //                 }
+                //             }
+                //         });
+
+                //         if (allInputsFilled) {
+                //             $.ajax({
+                //                 url: "/insert-data",
+                //                 type: "POST",
+                //                 contentType: 'application/json',
+                //                 data: JSON.stringify({
+                //                     // date: inputDate,
+                //                     selectedCompany: selectedCompany,
+                //                     tdata: trafo_data.tdata,
+                //                     tsettings: trafo_data.tsettings,
+                //                     type: 'existing'
+                //                 }),
+                //                 success: function(result) {
+                //                     if (result.status == 'success') {
+                //                         Swal.fire({
+                //                             icon: 'success',
+                //                             title: 'Success!',
+                //                             text: 'Data has been successfully inserted',
+                //                             timer: 3000
+                //                         });
+                //                         $("#judul_tdata").text("Transformer Data");
+                //                         $("#judul_tsettings").text("Transformer Settings");
+                //                         $("#edit").removeClass("d-none");
+                //                         $("#insert").removeClass("d-none");
+                //                         $("#addNewCust").removeClass("d-none");
+                //                         $("#save").addClass("d-none"); 
+                //                         $("#cancel").addClass("d-none"); 
+                //                         $(".tdata, .tsettings").attr("readonly", true);
+                //                         // $("#inputDate").val(inputDate)
+                //                         getTheData(selectedCompany)
+                //                     } else if (result.status == 'edit') {
+                //                         Swal.fire({
+                //                             icon: 'warning',
+                //                             title: 'Data already exist!',
+                //                             text: 'Edit the data instead?',
+                //                             showCancelButton: true,
+                //                             confirmButtonText: 'Yes',
+                //                             cancelButtonText: 'No'
+                //                         }).then((result) => {
+                //                             if (result.isConfirmed) {
+                //                                 $("#judul_tdata").text("Edit Transformer Data");
+                //                                 $("#judul_tsettings").text("Edit Transformer Settings");
+                //                                 $(".tdata, .tsettings").removeAttr("readonly");
+                //                                 if (changedValues.length <= 0) {
+                //                                     Swal.fire({
+                //                                         icon: 'info',
+                //                                         title: 'No Changes Made',
+                //                                         text: 'There were no changes to save',
+                //                                     })
+                //                                 } else {
+                //                                     selectedCompany = $('#dropdown').val()
+                //                                     // inputDate = $("#inputDate").val()
+
+                //                                     // if (selectedCompany == 'Choose a customer') {
+                //                                     //     alert('choose a cust first')
+                //                                     //     return
+                //                                     // }
+
+                //                                     // if (inputDate == '') {
+                //                                     //     alert('inputdate first')
+                //                                     //     return
+                //                                     // }
+
+                //                                     $.ajax({
+                //                                         url: "/update-data",
+                //                                         type: "POST",
+                //                                         contentType: 'application/json',
+                //                                         data: JSON.stringify({
+                //                                             changedValues: changedValues,
+                //                                             // date: inputDate,
+                //                                             selectedCompany: selectedCompany
+                //                                         }),
+                //                                         success: function(result) {
+                //                                             Swal.fire({
+                //                                                 icon: 'success',
+                //                                                 title: 'Success!',
+                //                                                 text: 'Data has been successfully edited',
+                //                                                 timer: 3000
+                //                                             });
+                //                                         }
+                //                                     });
+                //                                 }
+                //                             } else if (result.dismiss === Swal.DismissReason.cancel) {
+                //                                 // balik
+                //                             }
+                //                         });
+                //                     }
+                //                 }
+                //             });
+                //         } else {
+                //             Swal.fire({
+                //                 icon: 'warning',
+                //                 title: 'Incomplete Data',
+                //                 text: 'Please fill in all fields'
+                //             })
+                //         }
+                //     })
+                // })
+
+                // Edit
+                $("#edit").on("click", function() {
+                    $("#judul_tdata").text("Edit Transformer Data");
+                    $("#judul_tsettings").text("Edit Transformer Settings");
+                    $("#edit").addClass("d-none");
+                    $("#addNewCust").addClass("d-none");
+                    $("#search").addClass("d-none");
+                    $("#save").removeClass("d-none"); 
+                    $("#cancel").removeClass("d-none"); 
+                    $(".tdata, .tsettings").removeAttr("readonly");
+                    $("#dropdown").prop("disabled", true);
+
+                    $(".form-control.tdata").on("change", function() {
+                        var inputId = $(this).attr('id');
+                        console.log(inputId)
+                        var isParExists = changedValues.findIndex(function(item) {
+                            return item.par === inputId;
+                        });
+
+                        if ($(this).val() != originalData.tdata[inputId]) {
+                            if (isParExists !== -1) {
+                                changedValues[isParExists].value = $(this).val();
+                            } else {
+                                changedValues.push({ data: 'tdata', par: inputId, value: $(this).val() });
+                            }
+                        } else {
+                            changedValues = changedValues.filter(function(item) {
+                                return item.par !== inputId;
+                            });
+                        }
+
+                    });
+
+                    $(".form-control.tsettings").on("change", function() {
+                        var inputId = $(this).attr('id');
+                        var isParExists = changedValues.findIndex(function(item) {
+                            return item.par === inputId;
+                        });
+
+                        if ($(this).val() != originalData.tsettings[inputId]) {
+                            if (isParExists !== -1) {
+                                changedValues[isParExists].value = $(this).val();
+                            } else {
+                                changedValues.push({ data: 'tsettings', par: inputId, value: $(this).val() });
+                            }
+                        } else {
+                            changedValues = changedValues.filter(function(item) {
+                                return item.par !== inputId;
+                            });
+                        }
+
+                    });
+
+
+                    $("#save").on("click", function() {
+                        $("#judul_tdata").text("Transformer Data");
+                        $("#judul_tsettings").text("Transformer Settings");
+                        $("#addNewCust").removeClass("d-none");
+                        $("#edit").removeClass("d-none");
+                        $("#search").removeClass("d-none");
+                        $("#save").addClass("d-none"); 
+                        $("#cancel").addClass("d-none"); 
+                        $(".tdata, .tsettings").attr("readonly", true);
+                        $("#dropdown").prop("disabled", false);
+                        if (changedValues.length <= 0) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'No Changes Made',
+                                text: 'There were no changes to save',
+                            })
+                        } else {
+                            selectedCompany = $('#dropdown').val()
+                            // inputDate = $("#inputDate").val()
+
+                            $.ajax({
+                                url: "/update-data",
+                                type: "POST",
+                                contentType: 'application/json',
+                                data: JSON.stringify({
+                                    changedValues: changedValues,
+                                    // date: inputDate,
+                                    selectedCompany: selectedCompany
+                                }),
+                                success: function(result) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: 'Data has been successfully edited',
+                                        timer: 3000
+                                    });
+                                }
+                            });
+                            return
+                        }
+                    })      
+                    
+                    $("#cancel").on("click", function() { 
+                        $("#judul_tdata").text("Transformer Data");
+                        $("#judul_tsettings").text("Transformer Settings");
+                        $("#addNewCust").removeClass("d-none");
+                        $("#edit").removeClass("d-none");
+                        $("#search").removeClass("d-none");
+                        $("#save").addClass("d-none"); 
+                        $("#cancel").addClass("d-none"); 
+                        $(".tdata, .tsettings").attr("readonly", true);
+                        $("#dropdown").prop("disabled", false);
+                    })
+
+                    
+                });
+
+                // Add New Cust
+                $("#addNewCust").on("click", function() {
+                    $("#judul_tdata").text("Insert Transformer Data");
+                    $("#judul_tsettings").text("Insert Transformer Settings");
+                    $("#judul_details").text("Insert Details");
+                    $("#dropdown").hide();
+                    $("#inputNama").parent().show();
+                    $("#add").removeClass("d-none");
+                    $("#search").addClass("d-none");
+                    $("#cancelAddCust").removeClass("d-none");
+                    $("#addNewCust").addClass("d-none");
+                    $(".tdata, .tsettings").removeAttr("readonly");
+                    $("#dropdown").val($("#dropdown option:first").val());
+                    // $("#inputDate").val('');
+                    $(".tdata, .tsettings").val('');
+                    $("#edit").addClass("d-none");
+                    // $("#insert").addClass("d-none");
+
+
+                    $("#add").on("click", function() {
+                        selectedCompany = $('#inputNama').val();
+                        // inputDate = $("#inputDate").val();
+
+                        if (!selectedCompany) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Incomplete Details',
+                                text: 'Please complete the customer details field'
+                            })
+                            return;
+                        }
+                        
+                        // if (!inputDate) {
+                        //     Swal.fire({
+                        //         icon: 'warning',
+                        //         title: 'Date is not selected!',
+                        //         text: 'Please select a date',
+                        //     })
+                        //     return;
+                        // }
+
+                        allInputsFilled = true;
+
+                        $(".tdata, .tsettings").each(function() {
+                            if (!$(this).val()) {
+                                allInputsFilled = false;
+                                return false;
+                            } else {
+                                var par = $(this).attr('id');
+                                var value = $(this).val();
+                                
+                                if ($(this).hasClass("tdata")) {
+                                    trafo_data['tdata'][par] = value;
+                                } else {
+                                    trafo_data['tsettings'][par] = value;
+                                }
+                            }
+                        });
+
+                        if (allInputsFilled) {
+                            console.log(changedValues)
+                            $.ajax({
+                                url: "/insert-data",
+                                type: "POST",
+                                contentType: 'application/json',
+                                data: JSON.stringify({
+                                    // date: inputDate,
+                                    selectedCompany: selectedCompany,
+                                    tdata: trafo_data.tdata,
+                                    tsettings: trafo_data.tsettings,
+                                    type: 'new'
+                                }),
+                                success: function(result) {
+                                    if (result.status == 'success') {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Success!',
+                                            text: 'Data has been successfully inserted',
+                                            timer: 3000
+                                        });
+                                        $("#judul_tdata").text("Transformer Data");
+                                        $("#judul_tsettings").text("Transformer Settings");
+                                        $("#edit").removeClass("d-none");
+                                        // $("#insert").removeClass("d-none");
+                                        $("#addNewCust").removeClass("d-none");
+                                        $("#save").addClass("d-none"); 
+                                        $("#cancel").addClass("d-none"); 
+                                        $("#cancelAddCust").addClass("d-none"); 
+                                        $(".tdata, .tsettings").attr("readonly", true);
+                                        // $("#inputDate").val(inputDate)
+                                        getTheData(selectedCompany)
+                                    } else if (result.status == 'edit') {
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: 'Customer data already exist!',
+                                            text: 'Edit the data instead?',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Yes',
+                                            cancelButtonText: 'No'
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                $("#judul_tdata").text("Edit Transformer Data");
+                                                $("#judul_tsettings").text("Edit Transformer Settings");
+                                                $("#judul_details").text("Details");
+                                                $("#cancelAddCust").addClass("d-none");
+                                                $("#add").addClass("d-none");
+                                                $("#edit").addClass("d-none");
+                                                // $("#insert").addClass("d-none");
+                                                $("#save").removeClass("d-none"); 
+                                                $("#cancel").removeClass("d-none"); 
+                                                $(".tdata, .tsettings").removeAttr("readonly");
+                                                // $("#inputDate").attr("readonly", true);
+                                                $("#inputNama").attr("readonly", true);
+
+                                                $.ajax({
+                                                    url: "/get-data",
+                                                    type: "POST",
+                                                    data: {
+                                                        selectedCompany: selectedCompany,
+                                                        // date: inputDate
+                                                    },
+                                                    success: function(result) {
+                                                        if (result.status == 'success') {
+                                                            originalData = result.data
+                                                            fillFormData(originalData.tdata, originalData.tsettings);
+                                                        } else {
+                                                            // Swal.fire({
+                                                            //     icon: 'question',
+                                                            //     title: 'Data not found!',
+                                                            //     text: 'Show latest data instead?',
+                                                            //     showCancelButton: true,
+                                                            //     confirmButtonText: 'Yes',
+                                                            //     cancelButtonText: 'No'
+                                                            // })
+                                                        }
+                                                    }
+                                                });
+                                                
+
+                                                $(".form-control.tdata").on("change", function() {
+                                                    var inputId = $(this).attr('id');
+                                                    console.log(inputId)
+                                                    var isParExists = changedValues.findIndex(function(item) {
+                                                        return item.par === inputId;
+                                                    });
+
+                                                    if ($(this).val() != originalData.tdata[inputId]) {
+                                                        if (isParExists !== -1) {
+                                                            changedValues[isParExists].value = $(this).val();
+                                                        } else {
+                                                            changedValues.push({ data: 'tdata', par: inputId, value: $(this).val() });
+                                                        }
+                                                    } else {
+                                                        changedValues = changedValues.filter(function(item) {
+                                                            return item.par !== inputId;
+                                                        });
+                                                    }
+
+                                                });
+
+                                                $(".form-control.tsettings").on("change", function() {
+                                                    var inputId = $(this).attr('id');
+                                                    var isParExists = changedValues.findIndex(function(item) {
+                                                        return item.par === inputId;
+                                                    });
+
+                                                    if ($(this).val() != originalData.tsettings[inputId]) {
+                                                        if (isParExists !== -1) {
+                                                            changedValues[isParExists].value = $(this).val();
+                                                        } else {
+                                                            changedValues.push({ data: 'tsettings', par: inputId, value: $(this).val() });
+                                                        }
+                                                    } else {
+                                                        changedValues = changedValues.filter(function(item) {
+                                                            return item.par !== inputId;
+                                                        });
+                                                    }
+
+                                                });
+
+                                                $("#save").on("click", function() { 
+                                                
+                                                    if (changedValues.length <= 0) {
+                                                        Swal.fire({
+                                                            icon: 'info',
+                                                            title: 'No Changes Made',
+                                                            text: 'There were no changes to save',
+                                                        })
+                                                    } else {
+                                                        selectedCompany = $('#inputNama').val()
+                                                        // inputDate = $("#inputDate").val()
+                                                        $.ajax({
+                                                            url: "/update-data",
+                                                            type: "POST",
+                                                            contentType: 'application/json',
+                                                            data: JSON.stringify({
+                                                                changedValues: changedValues,
+                                                                // date: inputDate,
+                                                                selectedCompany: selectedCompany
+                                                            }),
+                                                            success: function(result) {
+                                                                Swal.fire({
+                                                                    icon: 'success',
+                                                                    title: 'Success!',
+                                                                    text: 'Data has been successfully edited',
+                                                                    timer: 3000
+                                                                });
+                                                            }
+                                                        });
+                                                        return
+                                                    }
+                                                })      
+                                                
+                                                $("#cancel").on("click", function() { 
+                                                    $("#judul_tdata").text("Transformer Data");
+                                                    $("#judul_tsettings").text("Transformer Settings");
+                                                    // $("#insert").removeClass("d-none");
+                                                    $("#addNewCust").removeClass("d-none");
+                                                    $("#edit").removeClass("d-none");
+                                                    $("#save").addClass("d-none"); 
+                                                    $("#cancel").addClass("d-none"); 
+                                                    $(".tdata, .tsettings").attr("readonly", true);
+                                                    $("#dropdown").prop("disabled", false);
+                                                    // $("#inputDate").removeAttr("readonly");
+                                                    $('input').val('');
+                                                })
+                                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                                // balik
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Incomplete Data',
+                                text: 'Please fill in all fields'
+                            })
+                        }
+                    });
+
+                    $("#cancelAddCust").on("click", function() {
+                        $("#judul_tdata").text("Transformer Data");
+                        $("#judul_tsettings").text("Transformer Settings");
+                        $("#judul_details").text("Details");
+                        $("#dropdown").show();
+                        $("#inputNama").parent().hide();
+                        $("#add").addClass("d-none");
+                        $("#search").removeClass("d-none");
+                        $("#cancelAddCust").addClass("d-none");
+                        $("#addNewCust").removeClass("d-none");
+                        $(".tdata, .tsettings").attr("readonly", true);
+                        $('input').val('');
+                    });
+                });
+            })
+        </script>
+    </body>
+</html>

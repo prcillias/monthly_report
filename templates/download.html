@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" id="theme-styles">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 15.5px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .navbar-nav .nav-item {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-nav .nav-item {
+            margin-right: 20px;
+        }
+        .navbar {
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        .navbar-nav .nav-link {
+            color: #333;
+            padding: 10px 20px;
+        }
+
+        .navbar-nav .nav-link.active {
+            font-weight: bold;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-nav .nav-item:hover {
+            /* background-color: rgba(255, 228, 207, 0.2);
+            border-radius: 10px;
+            height: 33px; */
+            font-weight: bold;
+            
+        }
+        .navbar-nav .nav-item:hover .material-symbols-outlined {
+            font-variation-settings: 'wght' 400;
+        }
+        .container {
+            display: flex;
+            /* justify-content: center; */
+            /* align-items: center; */
+            height: 86vh;
+            margin-top: 15px;
+        }
+        .form-container {
+            display: flex;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #dropdown {
+            width: 30%;
+        }
+
+        #classInputDate {
+            width: 30%;
+        }
+
+        .active-icon {
+            font-variation-settings: 'wght' 400;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar-label {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #272829;
+        }
+    </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 " style="display: flex; align-items: center;">
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined" style="display: inline-block; vertical-align: middle;">list_alt_add</i>
+                            <a class="nav-link" aria-current="page" href="/">Input Data</a>
+                        </li>
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined" style="display: inline-block; vertical-align: middle;">upload_file</i>
+                            <a class="nav-link" href="/upload">Upload</a>
+                        </li>
+                        <li class="nav-item">
+                            <i class="material-symbols-outlined active-icon" style="display: inline-block; vertical-align: middle;">download</i>
+                            <a class="nav-link active" href="#">Download</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-3 d-flex flex-column align-items-center">
+            <select class="form-select" name="dropdown" id="dropdown">
+                <option selected>Choose a customer</option>
+                {% for data in tdata %}
+                <option value="{{ data.nama }}">{{ data.nama }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="input-group mb-3 mt-2" id="classInputDate">
+                <input type="month" class="form-control" id="inputDate" >
+            </div>
+          <a href="" class="btn btn-primary mt-3" role="button" id="download">
+              <i class="bi bi-file-earmark-pdf"></i> Download Report
+          </a>
+      </div>
+
+      <script>
+        $(document).ready(function(){
+            var intervalId;
+            function updateProgress() {
+                $.getJSON('/make-pdf-progress', function(data) {
+                    if (data.progress > 100) {
+                        data.progress = 100
+                        $('.progress-bar').css('width', data.progress+'%').attr('aria-valuenow', data.progress);
+                        $('.progress-bar-label').text(data.progress.toFixed(0) + '%');
+                        clearInterval(intervalId);
+                    }
+                    $('.progress-bar').css('width', data.progress+'%').attr('aria-valuenow', data.progress);
+                    $('.progress-bar-label').text(data.progress.toFixed(0) + '%');
+                    console.log(data.progress)
+                    
+                });
+            }
+
+            $('#download').on('click', function(e){
+                e.preventDefault();
+
+                selectedCompany = $('#dropdown').val()
+                date = $('#inputDate').val()
+                if (selectedCompany != 'Choose a customer' && date != '') {
+                    clearInterval(intervalId);
+                    intervalId = setInterval(updateProgress, 1000);
+
+                    Swal.fire({
+                        title: 'Downloading',
+                        // text: 'Please wait...',
+                        // html: '<i class="fas fa-spinner fa-spin">Please wait...</i>',
+                        html: '<div class="progress">' +
+                            '<div class="progress-bar progress-bar-striped active text-center" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">' +
+                                '<span class="progress-bar-label mt-1">0%</span>' +
+                            '</div>' +
+                        '</div>',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.getConfirmButton().style.display = 'none';
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: "/check",
+                        type: "POST",
+                        data: {
+                            selectedCompany: selectedCompany,
+                            date: date
+                        },
+                        success: function(result) {
+                            console.log(result.message)
+                            if (result.message == 'success') {
+                                $.ajax({
+                                    url: "/make-pdf",
+                                    method: 'POST',
+                                    data: {
+                                        selectedCompany: selectedCompany,
+                                        date: date
+                                    },
+                                    xhrFields: {
+                                        responseType: 'blob'
+                                    },
+                                    success: function(response){
+                                        clearInterval(intervalId);
+
+                                        Swal.close();
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'File Downloaded!',
+                                            timer: 10000
+                                        });
+                                        const blob = new Blob([response], { type: 'application/pdf' });
+                                        const url = window.URL.createObjectURL(blob);
+
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = selectedCompany+' Report '+'('+date+')'+'.pdf';
+                                        document.body.appendChild(a);
+                                        a.click();
+
+                                        window.URL.revokeObjectURL(url);
+                                        document.body.removeChild(a);
+                                    },
+                                    error: function(xhr, status, error){
+                                        Swal.close();
+                                        clearInterval(intervalId);
+                                        if(error === 'BAD REQUEST') {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Error',
+                                                text: xhr.responseJSON.description,
+                                                timer: 10000
+                                            });
+                                        } else {
+                                            clearInterval(intervalId);
+
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Failed',
+                                                timer: 10000
+                                            });
+                                        }
+                                    }
+                                });
+                            } else {
+                                clearInterval(intervalId);
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Failed',
+                                    text: result.message,
+                                    timer: 10000
+                                });
+                            }
+                        }
+                    });
+
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Incomplete Details',
+                        text: 'Please complete the customer name and date fields'
+                    })
+                }
+
+            });        
+        })
+
+
+      </script>
+    </body>
+</html>
