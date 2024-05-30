@@ -93,9 +93,7 @@ progress = 0
 
 
 class TransformerData(db.Model):
-    # no = db.Column(db.Integer, autoincrement=True, primary_key=True)
     nama = db.Column(db.String(255), primary_key=True)
-    # date = db.Column(db.String(10))
     serial_number = db.Column(db.String(255))
     impedance = db.Column(db.Float)
     rated_power = db.Column(db.Float)
@@ -280,10 +278,10 @@ def add_bg(p, page):
 @app.route('/')
 def home():
     tdata = TransformerData.query.with_entities(TransformerData.nama).distinct().all()
-    # row_to_delete = TransformerData.query.filter_by(no=2).first()
-    # if row_to_delete:
-    #     db.session.delete(row_to_delete)
-    #     db.session.commit()
+    row_to_delete = TransformerSettings.query.filter_by(nama='B&D').first()
+    if row_to_delete:
+        db.session.delete(row_to_delete)
+        db.session.commit()
 
     return render_template('home.html', tdata=tdata)
 
@@ -1210,7 +1208,7 @@ def make_pdf():
     delay = 100.0 / rate_limit_per_minute
     
     # insert api key
-    # API_KEY = "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"
+    API_KEY = "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"
     
     client = OpenAI(api_key=API_KEY)
 
