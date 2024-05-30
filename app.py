@@ -1209,7 +1209,8 @@ def make_pdf():
     rate_limit_per_minute = 3
     delay = 100.0 / rate_limit_per_minute
     
-    # API_KEY = "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"
+    # insert api key
+    # API_KEY = ""
     
     client = OpenAI(api_key=API_KEY)
 
