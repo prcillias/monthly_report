@@ -8,7 +8,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Image, Table, TableStyle
 from PIL import Image
 from openai import OpenAI
-from datetime import time
+from datetime import time, datetime, timedelta
 import numpy as np
 import pandas as pd
 import re
@@ -21,6 +21,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_
 from pathlib import Path
 import calendar
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential, load_model
+from keras.layers import LSTM, Dense, Dropout
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -274,6 +277,145 @@ def add_bg(p, page):
         with Image.open(image_path) as img:
             img.thumbnail((120, 120))
             p.drawImage(image_path, 0, 0, width=bg_width, height=bg_height, preserveAspectRatio=True)
+
+def get_days_in_month(date_str):
+    year, month = map(int, date_str.split('-'))
+    return calendar.monthrange(year, month)[1]
+
+def add_one_month(date_str):
+    year, month = map(int, date_str.split('-'))
+    if month == 12:
+        year += 1
+        month = 1
+    else:
+        month += 1
+    return f"{year:04d}-{month:02d}"
+
+def forecast_data(name, date):
+    folder_path = f'C:/xampp/htdocs/generate_monthly_report/uploads/{name}/{date}'
+    all_data = pd.DataFrame()
+    for file in sorted(os.listdir(folder_path)):
+        if file.endswith('.xlsx') or file.endswith('.xls'):
+            file_path = os.path.join(folder_path, file)
+            data = pd.read_excel(file_path)
+            data.rename(columns={data.columns[-1]: "Status"}, inplace=True)
+            tanggal_file = re.findall(r'\d{4}\d{2}\d{2}', file)[0]
+            data['timestamp'] = pd.to_datetime(tanggal_file, format='%Y%m%d') + pd.to_timedelta(data['timestamp'].astype(str))
+            all_data = pd.concat([all_data, data], ignore_index=True)
+    daily_data = all_data[['timestamp', 'kWhInp']]
+    daily_data['usage'] = daily_data['kWhInp'] - daily_data['kWhInp'].shift(1)
+    daily_data = daily_data[['timestamp', 'usage']]
+    daily_data.set_index('timestamp', inplace=True)
+    daily_data = daily_data.resample('D').sum()
+    
+    forecast_result = forecast(name, daily_data, 10, get_days_in_month(add_one_month(date)), add_one_month(date))
+    total_usage = forecast_result['Predicted'].sum()
+    
+    return total_usage
+
+def preprocess_data(data, look_back):
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(data)
+
+    X, y = [], []
+    for i in range(look_back, len(scaled_data)):
+        X.append(scaled_data[i-look_back:i, 0])
+        y.append(scaled_data[i, 0])
+        
+    X, y = np.array(X), np.array(y)
+    if X.shape[0] == 0 or X.shape[1] == 0:
+        raise ValueError("Not enough data points to create X and y.")
+    
+    return X, y, scaler
+
+def build_model(look_back):
+    model = Sequential()
+    
+    model.add(LSTM(units = 50, return_sequences = True, input_shape = (look_back, 1)))
+    model.add(Dropout(0.2))
+
+    # Adding a second LSTM layer and some Dropout regularisation
+    model.add(LSTM(units = 50, return_sequences = True))
+    model.add(Dropout(0.2))
+
+    # Adding a third LSTM layer and some Dropout regularisation
+    model.add(LSTM(units = 50, return_sequences = True))
+    model.add(Dropout(0.2))
+
+    # Adding a fourth LSTM layer and some Dropout regularisation
+    model.add(LSTM(units = 50))
+    model.add(Dropout(0.2))
+
+    # Adding the output layer
+    model.add(Dense(units = 1))
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
+def train_and_save_model(name):
+    directory = 'C:/xampp/htdocs/generate_monthly_report/uploads/'
+    all_data = pd.DataFrame()
+    if name in sorted(os.listdir(directory)):
+        for folder in sorted(os.listdir(os.path.join(directory, name))):
+            folder_path = os.path.join(directory, name, folder)
+            for file in sorted(os.listdir(folder_path)):
+                if file.endswith('.xlsx') or file.endswith('.xls'):
+                    file_path = os.path.join(folder_path, file)
+                    data = pd.read_excel(file_path)
+                    data.rename(columns={data.columns[-1]: "Status"}, inplace=True)
+                    tanggal_file = re.findall(r'\d{4}\d{2}\d{2}', file)[0]
+                    data['timestamp'] = pd.to_datetime(tanggal_file, format='%Y%m%d') + pd.to_timedelta(data['timestamp'].astype(str))
+                    all_data = pd.concat([all_data, data], ignore_index=True)
+        daily_data = all_data[['timestamp', 'kWhInp']]
+        daily_data['usage'] = daily_data['kWhInp'] - daily_data['kWhInp'].shift(1)
+        daily_data = daily_data[['timestamp', 'usage']]
+        daily_data.set_index('timestamp', inplace=True)
+        daily_data = daily_data.resample('D').sum()
+        
+        X, y, scaler = preprocess_data(daily_data, 10)
+    
+        model = build_model(10)
+        model.fit(X, y, epochs=25, batch_size=32)
+        models_directory = 'C:/xampp/htdocs/generate_monthly_report/models/'
+        model_save_path = os.path.join(models_directory, f'{name}_model.keras')
+        model.save(model_save_path)
+    else:
+        print('Tidak ada')
+
+def forecast(name, recent_data, look_back, forecast_days, date):
+    models_directory = 'C:/xampp/htdocs/generate_monthly_report/models/'
+    model_load_path = os.path.join(models_directory, f'{name}_model.keras')
+    model = load_model(model_load_path)
+    
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    recent_data_scaled = scaler.fit_transform(recent_data)
+    
+    X_new = []
+    for i in range(look_back, len(recent_data_scaled)):
+        X_new.append(recent_data_scaled[i-look_back:i])
+    
+    X_new = np.array(X_new)
+    X_new = X_new.reshape((X_new.shape[0], look_back, 1))
+
+    predictions = []
+
+    for _ in range(forecast_days):
+        predicted_price = model.predict(X_new[-1].reshape(1, look_back, 1))
+        predictions.append(predicted_price[0, 0])
+        
+        new_input = np.append(X_new[-1, 1:, 0], predicted_price[0, 0])
+        X_new = np.vstack([X_new, new_input.reshape(1, look_back, 1)])
+
+    predictions = np.array(predictions).reshape(-1, 1)
+    predicted = scaler.inverse_transform(predictions)
+    
+    start_date = datetime.strptime(date, "%Y-%m")
+    date_range = [start_date + timedelta(days=i) for i in range(forecast_days)]
+
+    forecast_dates = pd.to_datetime(date_range)
+    df_result_new = pd.DataFrame({'Date': forecast_dates.strftime('%Y-%m-%d'), 'Predicted': predicted.flatten()})
+    
+    return df_result_new
+
 
 @app.route('/')
 def home():
@@ -575,14 +717,8 @@ def make_pdf():
 
     data = combined_data
 
-    print('reading data')
-    
-
     if status == 'error':
         return abort(400, description=f"File {file} does not match the given date {date}")
-
-    # app.bulan = data['timestamp'].iloc[0].strftime('%B')
-    # app.tahun = data['timestamp'].iloc[0].strftime('%Y')
 
     app.bulan = calendar.month_name[int(date.split('-')[1])]
     app.tahun = str(date.split('-')[0])
@@ -622,7 +758,6 @@ def make_pdf():
                     press_type = 2
                     data['selisih_waktu'] = data['timestamp'].diff()
                     data['total_time'] = data['selisih_waktu'].where(data[column].shift(-1) == data[column].max()).fillna(pd.Timedelta(0)).cumsum()
-
                     total_times = data['total_time'].iloc[-1]
                     max_value = data[column].max()
                     data_max = data[data[column] == max_value]
@@ -828,21 +963,6 @@ def make_pdf():
     app.plot_voltage = fig_voltage
     progress += current_progress
 
-    # # Tegangan ke Fase Netral Plot
-    # fig_voltage_netral = px.line(data, x='timestamp', y=['Van', 'Vbn', 'Vcn'], title=f'{app.bulan} Voltage Chart',
-    #           labels={'value': 'voltage', 'variable': 'voltage'})
-    # fig_voltage_netral.update_layout(title_x=0.5, title_font=dict(size=20))
-    # fig_voltage_netral.update_traces(mode='lines')
-    # fig_voltage_netral.update_xaxes(
-    #     title_text='timestamp',
-    #     tickvals=[data['timestamp'].min(), data['timestamp'].max()],
-    #     range=[data['timestamp'].min(), data['timestamp'].max()],
-    #     dtick='D1',
-    #     tickformat='%Y-%m-%d'
-    # )
-    # app.plot_voltage_netral = fig_voltage_netral
-    # progress += current_progress
-
     # Arus Plot
     fig_arus = px.line(data, x='timestamp', y=['Ia', 'Ib', 'Ic'], title=f'{app.bulan} Current Chart',
               labels={'value': 'current', 'variable': 'current'})
@@ -1042,8 +1162,8 @@ def make_pdf():
 
     end_time_making_plot = time.time()
 
-    parameters = ['OilTemp', 'BusTemp', 'WTITemp', 'Press', 'Level', 'V', 'I', 'P', 'Q', 'S', 'PF', 'Freq', 'Ineutral', 'kWhInp', 'kVARhinp', 'THDV', 'THDI', 'KRated', 'deRating']
-    # parameters = ['I']
+    parameters = ['OilTemp', 'BusTemp', 'WTITemp', 'Press', 'Level', 'V', 'I', 'P', 'Q', 'S', 'PF', 'Freq', 'Ineutral', 'kVARhinp', 'THDV', 'THDI', 'KRated', 'deRating']
+    # parameters = ['OilTemp', 'BusTemp', 'WTITemp', 'Press', 'Level', 'V', 'I', 'P', 'Q', 'S', 'PF', 'Freq', 'Ineutral', 'kWhInp', 'kVARhinp', 'THDV', 'THDI', 'KRated', 'deRating']
 
     start_time_making_prompt = time.time()
 
@@ -1057,34 +1177,15 @@ def make_pdf():
             if parameter == 'BusTemp' or parameter == 'WTITemp' or parameter == 'THDV' or parameter == 'THDI':
                 if parameter == 'BusTemp':
                     par_prompt = f"Trafo tersebut memiliki setting busbar temperature high alarm sebesar {transformer_settings.bustemp_high_alarm} dan busbar temperature high trip sebesar {transformer_settings.bustemp_high_trip}. "
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting busbar temperature high alarm sebesar {transformer_settings.bustemp_high_alarm} dan busbar temperature high trip sebesar {transformer_settings.bustemp_high_trip}. "
                 elif parameter == 'WTITemp':
                     par_prompt = f"Trafo tersebut memiliki setting WTI high alarm sebesar {transformer_settings.wti_high_alarm} dan WTI high trip sebesar {transformer_settings.wti_high_trip}. "
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting WTI high alarm sebesar {transformer_settings.wti_high_alarm} dan WTI high trip sebesar {transformer_settings.wti_high_trip}. "
                 elif parameter == 'THDV':
                     par_prompt = f"Trafo tersebut memiliki setting THDV alarm sebesar {transformer_settings.thdv_alarm} dan THDV trip sebesar {transformer_settings.thdv_trip}. "
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting THDV alarm sebesar {transformer_settings.thdv_alarm} dan THDV trip sebesar {transformer_settings.thdv_trip}. "
                 elif parameter == 'THDI':
                     par_prompt = f"Trafo tersebut memiliki setting THDI alarm sebesar {transformer_settings.thdi_alarm} dan THDI trip sebesar {transformer_settings.thdi_trip}. "
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting THDI alarm sebesar {transformer_settings.thdi_alarm} dan THDI trip sebesar {transformer_settings.thdi_trip}. "
                 else:
                     par_prompt = f"Trafo tersebut memiliki setting {parameter} maksimal sebagai berikut: {statistics[parameter+'1']['nama']} sebesar {statistics[parameter+'1']['max']}, {statistics[parameter+'2']['nama']} sebesar {statistics[parameter+'2']['max']}, {statistics[parameter+'3']['nama']} sebesar {statistics[parameter+'3']['max']}."
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting {parameter} maksimal sebesar {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['max']}, {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['max']}, {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['max']}. "
                 prompt = (
-                    # f"Terdapat data {statistics[parameter+'1']['nama']}, {statistics[parameter+'2']['nama']}, dan {statistics[parameter+'3']['nama']} milik {selected_company} selama bulan {app.bulan}, "
-                    # f"Mean {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['mean']}, Standar deviasi {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['std']}, {statistics[parameter+'1']['nama']} Simpangan rata-rata {statistics[parameter+'1']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['min']}, Max {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['max']}, Mode {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['mode']}, Q1 {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['q1']}, Q2 {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['q2']}, Q3 {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['q3']}, Skewness {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'1']['nama']} {statistics[parameter+'1']['cv']}, "
-                    # f"Mean {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['mean']}, Standar deviasi {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['std']}, {statistics[parameter+'2']['nama']} Simpangan rata-rata {statistics[parameter+'2']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['min']}, Max {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['max']}, Mode {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['mode']}, Q2 {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['q2']}, Q2 {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['q2']}, Q3 {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['q3']}, Skewness {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'2']['nama']} {statistics[parameter+'2']['cv']},"
-                    # f"Mean {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['mean']}, Standar deviasi {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['std']}, {statistics[parameter+'3']['nama']} Simpangan rata-rata {statistics[parameter+'3']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['min']}, Max {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['max']}, Mode {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['mode']}, Q3 {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['q3']}, Q3 {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['q3']}, Q3 {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['q3']}, Skewness {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'3']['nama']} {statistics[parameter+'3']['cv']}."
-                    # f"{par_prompt}"
-                    # f"Hasil analisis dibuat satu paragraf pendek dalam bahasa Indonesia dan mudah dipahami orang awam tanpa menyertakan nilai bahasa statistik."
-                    # # f"Contohnya seperti berikut : “Based on the quantitative descriptive analysis of the transformer oil temperature data, it can be concluded that the transformer operates under relatively stable and controlled conditions. The average oil temperature is around 60 degrees Celsius, with most values clustered around this mean. The relatively low standard deviation and mean deviation indicate consistency in the transformer oil temperature. The observed temperature range also remains well below the permissible temperature limit for the transformer, indicating its ability to handle reasonable temperature variations during operation. Although there is a slight right-skewed distribution tendency and a relatively high variability in the oil temperature, the temperature distribution still falls within an acceptable range. Therefore, based on this analysis, the transformer can be considered to operate within permissible temperature limits, with continuous monitoring required to maintain optimal performance and prevent any potential damage.”."
-
                     f"Trafo ini memiliki nilai rata-rata {statistics[parameter+'1']['nama']} sebesar {statistics[parameter+'1']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'1']['nama']} sebesar {statistics[parameter+'1']['max']}, dan nilai minimum {statistics[parameter+'1']['nama']} sebesar {statistics[parameter+'1']['min']}. "
                     f"Lalu, nilai rata-rata {statistics[parameter+'2']['nama']} sebesar {statistics[parameter+'2']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'2']['nama']} sebesar {statistics[parameter+'2']['max']}, dan nilai minimum {statistics[parameter+'2']['nama']} sebesar {statistics[parameter+'2']['min']}. "
                     f"Dan, nilai rata-rata {statistics[parameter+'3']['nama']} sebesar {statistics[parameter+'3']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'3']['nama']} sebesar {statistics[parameter+'3']['max']}, dan nilai minimum {statistics[parameter+'3']['nama']} sebesar {statistics[parameter+'3']['min']}. "
@@ -1092,38 +1193,18 @@ def make_pdf():
                     f"Buatlah analisis deskriptif dalam satu paragraf terkait keadaan trafo tersebut, serta berikan statement apakah kondisi trafo tersebut normal atau tidak berdasarkan data tersebut."
                 )
                 prompts[parameter] = prompt
-                # prompts[parameter] = 'tes prompt 1'
             elif parameter == 'I' or parameter == 'P' or parameter == 'Q' or parameter == 'S' or parameter == 'PF' or parameter == 'KRated' or parameter == 'deRating':
                 if parameter == 'I':
                     par_prompt = f"Trafo tersebut memiliki setting current high alarm sebesar {transformer_settings.current_high_alarm} dan current high trip sebesar {transformer_settings.current_high_trip}."
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting current high alarm sebesar {transformer_settings.current_high_alarm} dan current high trip sebesar {transformer_settings.current_high_trip}. "
                 elif parameter == 'S':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting rated power sebesar {transformer_data.rated_power}. "
                     par_prompt = f"Trafo tersebut memiliki setting rated power sebesar {transformer_data.rated_power}."
-                    
                 elif parameter == 'PF':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting power factor low alarm sebesar {transformer_settings.pf_low_alarm} dan power factor low trip sebesar {transformer_settings.pf_low_trip}. "
                     par_prompt = f"Trafo tersebut memiliki setting power factor low alarm sebesar {transformer_settings.pf_low_alarm} dan power factor low trip sebesar {transformer_settings.pf_low_trip}."
                 else:
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting {parameter} maksimal sebesar {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['max']}, {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['max']}, {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['max']}. "
                     par_prompt = f"Trafo tersebut memiliki setting {parameter} maksimal sebagai berikut: {statistics[parameter+'a']['nama']} sebesar {statistics[parameter+'a']['max']}, {statistics[parameter+'b']['nama']} sebesar {statistics[parameter+'b']['max']}, {statistics[parameter+'c']['nama']} sebesar {statistics[parameter+'c']['max']}."
                     
 
                 prompt = (
-                    # f"Terdapat data {statistics[parameter+'a']['nama']}, {statistics[parameter+'b']['nama']}, dan {statistics[parameter+'c']['nama']} milik {selected_company} selama bulan {app.bulan}, "
-                    # f"Mean {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['mean']}, Standar deviasi {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['std']}, {statistics[parameter+'a']['nama']} Simpangan rata-rata {statistics[parameter+'a']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['min']}, Max {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['max']}, Mode {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['mode']}, q1 {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['q1']}, q2 {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['q2']}, q3 {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['q3']}, Skewness {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['cv']}, "
-                    # f"Mean {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['mean']}, Standar deviasi {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['std']}, {statistics[parameter+'b']['nama']} Simpangan rata-rata {statistics[parameter+'b']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['min']}, Max {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['max']}, Mode {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['mode']}, q2 {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['q2']}, q2 {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['q2']}, q3 {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['q3']}, Skewness {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['cv']},"
-                    # f"Mean {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['mean']}, Standar deviasi {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['std']}, {statistics[parameter+'c']['nama']} Simpangan rata-rata {statistics[parameter+'c']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['min']}, Max {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['max']}, Mode {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['mode']}, q3 {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['q3']}, q3 {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['q3']}, q3 {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['q3']}, Skewness {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['cv']}."
-                    # # f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting {parameter} maksimal sebesar {statistics[parameter+'a']['nama']} {statistics[parameter+'a']['max']}, {statistics[parameter+'b']['nama']} {statistics[parameter+'b']['max']}, {statistics[parameter+'c']['nama']} {statistics[parameter+'c']['max']}."
-                    # f"Hasil analisis dibuat satu paragraf pendek dalam bahasa Indonesia dan mudah dipahami orang awam tanpa menyertakan nilai bahasa statistik."
-                    # # f"Contohnya seperti berikut : “Based on the quantitative descriptive analysis of the transformer oil temperature data, it can be concluded that the transformer operates under relatively stable and controlled conditions. The average oil temperature is around 60 degrees Celsius, with most values clustered around this mean. The relatively low standard deviation and mean deviation indicate consistency in the transformer oil temperature. The observed temperature range also remains well below the permissible temperature limit for the transformer, indicating its ability to handle reasonable temperature variations during operation. Although there is a slight right-skewed distribution tendency and a relatively high variability in the oil temperature, the temperature distribution still falls within an acceptable range. Therefore, based on this analysis, the transformer can be considered to operate within permissible temperature limits, with continuous monitoring required to maintain optimal performance and prevent any potential damage.”."
-                
                     f"Trafo ini memiliki nilai rata-rata {statistics[parameter+'a']['nama']} sebesar {statistics[parameter+'a']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'a']['nama']} sebesar {statistics[parameter+'a']['max']}, dan nilai minimum {statistics[parameter+'a']['nama']} sebesar {statistics[parameter+'a']['min']}. "
                     f"Lalu, nilai rata-rata {statistics[parameter+'b']['nama']} sebesar {statistics[parameter+'b']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'b']['nama']} sebesar {statistics[parameter+'b']['max']}, dan nilai minimum {statistics[parameter+'b']['nama']} sebesar {statistics[parameter+'b']['min']}. "
                     f"Dan, nilai rata-rata {statistics[parameter+'c']['nama']} sebesar {statistics[parameter+'c']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'c']['nama']} sebesar {statistics[parameter+'c']['max']}, dan nilai minimum {statistics[parameter+'c']['nama']} sebesar {statistics[parameter+'c']['min']}. "
@@ -1132,25 +1213,9 @@ def make_pdf():
                 
                 )
                 prompts[parameter] = prompt
-                # prompts[parameter] = 'tes prompt 3'
             elif parameter == 'V':
-                # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting voltage low trip sebesar {transformer_settings.voltage_low_trip}, voltage low alarm sebesar {transformer_settings.voltage_low_alarm}, voltage high trip sebesar {transformer_settings.voltage_high_trip}, dan voltage high alarm sebesar {transformer_settings.voltage_high_alarm}. "
 
                 prompt = (
-                    # f"Terdapat data {statistics[parameter+'an']['nama']}, {statistics[parameter+'bn']['nama']}, dan {statistics[parameter+'cn']['nama']} milik {selected_company} selama bulan {app.bulan}, "
-                    # f"Mean {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['mean']}, Standar deviasi {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['std']}, {statistics[parameter+'an']['nama']} Simpangan rata-rata {statistics[parameter+'an']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['min']}, Max {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['max']}, Mode {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['mode']}, q1 {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['q1']}, q2 {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['q2']}, q3 {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['q3']}, Skewness {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'an']['nama']} {statistics[parameter+'an']['cv']}, "
-                    # f"Mean {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['mean']}, Standar deviasi {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['std']}, {statistics[parameter+'bn']['nama']} Simpangan rata-rata {statistics[parameter+'bn']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['min']}, Max {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['max']}, Mode {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['mode']}, q2 {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['q2']}, q2 {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['q2']}, q3 {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['q3']}, Skewness {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'bn']['nama']} {statistics[parameter+'bn']['cv']},"
-                    # f"Mean {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['mean']}, Standar deviasi {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['std']}, {statistics[parameter+'cn']['nama']} Simpangan rata-rata {statistics[parameter+'cn']['avg_diff']}, "
-                    # f"Min {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['min']}, Max {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['max']}, Mode {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['mode']}, q3 {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['q3']}, q3 {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['q3']}, q3 {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['q3']}, Skewness {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['skewness']}, "
-                    # f"Koefisien variasi {statistics[parameter+'cn']['nama']} {statistics[parameter+'cn']['cv']}."
-                    # f"{par_prompt}"
-                    # # f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting maksimal sebesar {statistics['V'+'an']['nama']} {statistics['V'+'an']['max']}, {statistics['V'+'bn']['nama']} {statistics['V'+'bn']['max']}, {statistics['V'+'cn']['nama']} {statistics['V'+'cn']['max']}."
-                    # f"Hasil analisis dibuat satu paragraf pendek dalam bahasa Indonesia dan mudah dipahami orang awam tanpa menyertakan nilai bahasa statistik."
-
                     f"Trafo ini memiliki nilai rata-rata {statistics[parameter+'an']['nama']} sebesar {statistics[parameter+'an']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'an']['nama']} sebesar {statistics[parameter+'an']['max']}, dan nilai minimum {statistics[parameter+'an']['nama']} sebesar {statistics[parameter+'an']['min']}. "
                     f"Lalu, nilai rata-rata {statistics[parameter+'bn']['nama']} sebesar {statistics[parameter+'bn']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'bn']['nama']} sebesar {statistics[parameter+'bn']['max']}, dan nilai minimum {statistics[parameter+'bn']['nama']} sebesar {statistics[parameter+'bn']['min']}. "
                     f"Dan, nilai rata-rata {statistics[parameter+'cn']['nama']} sebesar {statistics[parameter+'cn']['mean']} selama sebulan, nilai maksimal {statistics[parameter+'cn']['nama']} sebesar {statistics[parameter+'cn']['max']}, dan nilai minimum {statistics[parameter+'cn']['nama']} sebesar {statistics[parameter+'cn']['min']}."
@@ -1159,33 +1224,18 @@ def make_pdf():
                 )
                 prompts[parameter] = prompt
             else:
-                # prompt = (
-                #     f"Trafo ini memiliki nilai rata-rata {statistics[parameter]['nama']} sebesar {statistics[parameter]['mean']} celcius selama sebulan, nilai maksimal {statistics[parameter]['nama']} sebesar {statistics[parameter]['max']} celcius, dan nilai minimum {statistics[parameter]['nama']} sebesar {statistics[parameter]['min']} celcius."
-                #     f"Trafo tersebut memiliki setting top oil high alarm sebesar {transformer_settings.top_oil_high_alarm} dan top oil high trip sebesar {transformer_settings.top_oil_high_trip}."
-                #     f"Buatlah analisis deskriptif dalam satu paragraf terkait keadaan trafo tersebut, serta berikan statement apakah kondisi trafo tersebut normal atau tidak berdasarkan data tersebut."
-                # )
                 if parameter == 'OilTemp':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting top oil high alarm sebesar {transformer_settings.top_oil_high_alarm} dan top oil high trip sebesar {transformer_settings.top_oil_high_trip}. "
                     par_prompt = f"Trafo tersebut memiliki setting top oil high alarm sebesar {transformer_settings.top_oil_high_alarm} dan top oil high trip sebesar {transformer_settings.top_oil_high_trip}."
                 elif parameter == 'Press':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting pressure high alarm sebesar {transformer_settings.pressure_high_alarm} dan pressure high trip sebesar {transformer_settings.pressure_high_trip}. "
                     par_prompt = f"Trafo tersebut memiliki setting pressure high alarm sebesar {transformer_settings.pressure_high_alarm} dan pressure high trip sebesar {transformer_settings.pressure_high_trip}."
                 elif parameter == 'Ineutral':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting I neutral high alarm sebesar {transformer_settings.i_neutral_high_alarm} dan I neutral high trip sebesar {transformer_settings.i_neutral_high_trip}. "
                     par_prompt = f"Trafo tersebut memiliki setting I neutral high alarm sebesar {transformer_settings.i_neutral_high_alarm} dan I neutral high trip sebesar {transformer_settings.i_neutral_high_trip}."
                 elif parameter == 'Freq':
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting freq low alarm sebesar {transformer_settings.freq_low_alarm} dan freq low trip sebesar {transformer_settings.freq_low_trip}. "
                     par_prompt = f"Trafo tersebut memiliki setting freq low alarm sebesar {transformer_settings.freq_low_alarm} dan freq low trip sebesar {transformer_settings.freq_low_trip}."
                 else:
-                    # par_prompt = f"Berikan analisis deskriptif terkait keadaan trafo Perusahaan tersebut, yang mana memiliki setting {parameter} maksimal sebesar {statistics[parameter]['max']}. "
                     par_prompt = f"Trafo tersebut memiliki setting {parameter} maksimal sebesar {statistics[parameter]['max']}."
 
                 prompt = (
-                    # f"Terdapat data {statistics[parameter]['nama']} milik {selected_company} selama bulan {app.bulan}, "
-                    # f"Mean {statistics[parameter]['mean']}, Standar deviasi {statistics[parameter]['std']}, Simpangan rata-rata {statistics[parameter]['avg_diff']}, "
-                    # f"Min {statistics[parameter]['min']}, Max {statistics[parameter]['max']}, Mode {statistics[parameter]['mode']}, Q1 {statistics[parameter]['q1']}, Q2 {statistics[parameter]['q2']}, Q3 {statistics[parameter]['q3']}, Skewness {statistics[parameter]['skewness']}, Koefisien variasi {statistics[parameter]['cv']}. "
-                    # f"{par_prompt}"
-                    # f"Hasil analisis dibuat satu paragraf pendek dalam bahasa Indonesia dan mudah dipahami orang awam tanpa menyertakan nilai bahasa statistik."
                     f"Trafo ini memiliki nilai rata-rata {statistics[parameter]['nama']} sebesar {statistics[parameter]['mean']} selama sebulan, nilai maksimal {statistics[parameter]['nama']} sebesar {statistics[parameter]['max']}, dan nilai minimum {statistics[parameter]['nama']} sebesar {statistics[parameter]['min']}. "
                     f"{par_prompt}"
                     f"Buatlah analisis deskriptif dalam satu paragraf terkait keadaan trafo tersebut, serta berikan statement apakah kondisi trafo tersebut normal atau tidak berdasarkan data tersebut."
@@ -1193,6 +1243,7 @@ def make_pdf():
                 prompts[parameter] = prompt
             print(prompt)
         progress += current_progress/len(parameters)
+
         
     end_time_making_prompt = time.time()
 
@@ -1203,10 +1254,7 @@ def make_pdf():
     rate_limit_per_minute = 3
     delay = 100.0 / rate_limit_per_minute
     
-    # insert api key
-    API_KEY = "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"
-    
-    client = OpenAI(api_key=API_KEY)
+    client = OpenAI(api_key="sk-proj-XzX4jdYT5lVFvi75a09xT3BlbkFJ2boQYyIuoxJ0uke1CpEg")
 
     answers = {}
     summary_answers = {}
@@ -1292,7 +1340,10 @@ def make_pdf():
     # suggestion = 'Beberapa saran yang dapat diberikan adalah:\n\n1. Optimalkan Efisiensi Energi: Meskipun data menunjukkan efisiensi yang baik dalam penggunaan energi, perusahaan dapat terus memantau dan mengoptimalkan penggunaan energi untuk mengurangi potensi pemborosan energi yang tidak perlu. Langkah-langkah seperti melakukan audit energi dan memperbarui sistem untuk meningkatkan efisiensi dapat membantu perusahaan menghemat biaya dan mendukung keberlanjutan.\n2. Perawatan dan Monitoring Harmonisa: Karena terdapat variasi distorsi harmonik yang signifikan pada beberapa data, perusahaan disarankan untuk meningkatkan perawatan dan monitoring terhadap harmonisa pada trafo. Hal ini dapat dilakukan dengan mengikuti pedoman perawatan yang direkomendasikan dan menggunakan perangkat pemantauan yang tepat untuk memastikan kualitas tegangan dan arus yang optimal.\n3. Pemantauan dan Peningkatan Faktor Daya: Meskipun faktor daya pada fasa-fasa tertentu cenderung stabil, perusahaan dapat memantau dan mengoptimalkan faktor daya pada setiap fasa untuk meningkatkan efisiensi sistem kelistrikan mereka. Langkah-langkah seperti instalasi peralatan yang lebih efisien atau penyempurnaan sistem distribusi dapat membantu meningkatkan faktor daya secara keseluruhan.'
     print(suggestion)
     suggestion_poin = re.findall(r'\d+\.\s+.*?(?=\n\d+\.|\Z)', suggestion, re.DOTALL)
-
+    
+    forecast_kwh = forecast_data(selected_company, date)
+    answers['kWhInp'] = f"Berdasarkan data historis penggunaan sebelumnya, diperkirakan penggunaan kWh dari trafo pada bulan depan akan mencapai {forecast_kwh} kWh."
+    summary_answers['kWhInp'] = " "
     end_time_generate_suggestion = time.time()
 
 
@@ -1336,17 +1387,15 @@ def make_pdf():
     end_time_generate_cover = time.time()
 
 
-    # TABLE OF CONTENTS
 
     start_time_generate_toc = time.time()
 
-
+    # TABLE OF CONTENTS
     p.setFont("Helvetica-Bold", 15)
     text = "TABLE OF CONTENTS"
     text_width = p.stringWidth(text, "Helvetica-Bold", 15)
     x = (A4[0] - text_width) / 2
     p.drawString(x, 775, text)
-
     x1, y1 = 90, 725
 
     p.setFont("Helvetica-Bold", 12)
@@ -1363,7 +1412,6 @@ def make_pdf():
     p.drawString(100, y1-110, "2.4   Tank Pressure")
     p.drawString(100, y1-125, "2.5   Oil Level")
     p.setFont("Helvetica-Bold", 12)
-
     p.drawString(90, y1-145, "Electrical Deep Analysis")
     p.setFont("Helvetica", 12)
     p.drawString(100, y1-160, "3.1   Voltage Analysis")
@@ -1385,7 +1433,6 @@ def make_pdf():
     p.drawString(110, y1-385, "3.6.2   Total Harmonic Distortion Arus")
     p.drawString(110, y1-400, "3.6.3   KRated")
     p.drawString(110, y1-415, "3.6.4   DeRating")
-
     p.setFont("Helvetica-Bold", 12)
     p.drawString(90, y1-435, "Conclusion & Suggestion")
     p.setFont("Helvetica", 12)
@@ -1414,8 +1461,6 @@ def make_pdf():
     p.setFont("Helvetica-Bold", 12)
     p.drawString(subbab_x, subbab_y, "1.1. Data Transformer")
 
-    # transformer_data = TransformerData.query.filter(and_(TransformerData.nama == selected_company, TransformerData.date == date)).order_by(TransformerData.no.desc()).first()
-
     if transformer_data:
         columns = transformer_data.__table__.columns.keys()
         data = [['No', 'Parameter', 'Data', 'Units']]
@@ -1426,8 +1471,6 @@ def make_pdf():
 
         i = 1
         for col in columns[1:]:
-            # parameter_name = col
-            # parameter_name = ' '.join(word.capitalize() for word in col.split('_'))
             parameter_value = getattr(transformer_data, col)
             data.append([i, parameter_name[i-1], parameter_value, units[i-1]])
             i += 1
@@ -1469,7 +1512,6 @@ def make_pdf():
 
     if transformer_settings:
         columns = list(transformer_settings.__table__.columns.keys())[1:]
-        # columns = [col.replace('_', ' ').title() for col in columns]
         values = [getattr(transformer_settings, col) for col in columns]
 
         data = []
@@ -1916,7 +1958,6 @@ def make_pdf():
     t.wrapOn(p, table_width, table_height)
     
     t.drawOn(p, 60, table_width-70)
-    # p.restoreState()    
 
     progress += current_progress
 
@@ -1945,15 +1986,6 @@ def make_pdf():
     
     p.save()
     buffer.seek(0)
-
-    # folder_path = 'C:/xampp/htdocs/monthly_report/visualisasi/uploads/'
-    # customer_folder_path = os.path.join(folder_path, selected_company)
-    # date_folder_path = os.path.join(customer_folder_path, date)
-    # if not os.path.exists(date_folder_path):
-    #     os.makedirs(date_folder_path)
-    # pdf_file_path = os.path.join(date_folder_path, f'{download_name}.pdf')
-    # with open(pdf_file_path, 'wb') as f:
-    #     f.write(buffer.getvalue())
 
     end_time = time.time()
     execution_time = end_time - start_time
