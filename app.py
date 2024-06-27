@@ -471,6 +471,8 @@ def upload_file():
                     return jsonify({'message': 'date_error'})
                 file_path = os.path.join(date_folder_path, uploaded_file.filename)
                 uploaded_file.save(file_path)
+                
+            train_and_save_model(selected_company)
 
             return jsonify({'message': 'success'})
 
