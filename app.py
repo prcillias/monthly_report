@@ -292,7 +292,9 @@ def add_one_month(date_str):
     return f"{year:04d}-{month:02d}"
 
 def forecast_data(name, date):
-    folder_path = f'C:/xampp/htdocs/generate_monthly_report/uploads/{name}/{date}'
+    current_path = os.getcwd()
+    directory = current_path + '/uploads'
+    folder_path = f'{directory}/{name}/{date}'
     all_data = pd.DataFrame()
     for file in sorted(os.listdir(folder_path)):
         if file.endswith('.xlsx') or file.endswith('.xls'):
@@ -352,7 +354,8 @@ def build_model(look_back):
     return model
 
 def train_and_save_model(name):
-    directory = 'C:/xampp/htdocs/generate_monthly_report/uploads/'
+    current_path = os.getcwd()
+    directory = current_path + '/uploads'
     all_data = pd.DataFrame()
     if name in sorted(os.listdir(directory)):
         for folder in sorted(os.listdir(os.path.join(directory, name))):
@@ -375,14 +378,15 @@ def train_and_save_model(name):
     
         model = build_model(10)
         model.fit(X, y, epochs=25, batch_size=32)
-        models_directory = 'C:/xampp/htdocs/generate_monthly_report/models/'
+        models_directory = current_path + '/models'
         model_save_path = os.path.join(models_directory, f'{name}_model.keras')
         model.save(model_save_path)
     else:
         print('Tidak ada')
 
 def forecast(name, recent_data, look_back, forecast_days, date):
-    models_directory = 'C:/xampp/htdocs/generate_monthly_report/models/'
+    current_path = os.getcwd()
+    models_directory = current_path + '/models'
     model_load_path = os.path.join(models_directory, f'{name}_model.keras')
     model = load_model(model_load_path)
     
@@ -438,7 +442,8 @@ def list_files():
     files = []
     selected_company = request.args.get('selectedCompany')
     date = request.args.get('date')
-    folder_path = 'C:/xampp/htdocs/monthly_report/visualisasi/uploads/'
+    current_path = os.getcwd()
+    folder_path = current_path + '/uploads'
     customer_folder_path = os.path.join(folder_path, selected_company)
     date_folder_path = os.path.join(customer_folder_path, date)
     if os.path.exists(date_folder_path):
@@ -452,7 +457,9 @@ def upload_file():
         date = request.form.get('date')
         uploaded_files = request.files.getlist('excel_file')
         if uploaded_files != []:
-            company_folder_path = os.path.join('C:/xampp/htdocs/monthly_report/visualisasi/uploads/', selected_company)
+            current_path = os.getcwd()
+            folder_path = current_path + '/uploads'
+            company_folder_path = os.path.join(folder_path, selected_company)
             date_folder_path = os.path.join(company_folder_path, date)
             if not os.path.exists(date_folder_path):
                 os.makedirs(date_folder_path)
@@ -628,7 +635,10 @@ def delete_files():
     files_to_delete = request.json.get('files')
     selected_company = request.json.get('selectedCompany')
     date = request.json.get('date')
-    company_folder_path = os.path.join('C:/xampp/htdocs/monthly_report/visualisasi/uploads/', selected_company)
+    
+    current_path = os.getcwd()
+    folder_path = current_path + '/uploads'
+    company_folder_path = os.path.join(folder_path, selected_company)
     date_folder_path = os.path.join(company_folder_path, date)
     for file_name in files_to_delete:
         try:
@@ -641,7 +651,9 @@ def delete_files():
 def delete_all_files():
     selected_company = request.json.get('selectedCompany')
     date = request.json.get('date')
-    company_folder_path = os.path.join('C:/xampp/htdocs/monthly_report/visualisasi/uploads/', selected_company)
+    current_path = os.getcwd()
+    folder_path = current_path + '/uploads'
+    company_folder_path = os.path.join(folder_path, selected_company)
     date_folder_path = os.path.join(company_folder_path, date)
     for file_name in os.listdir(date_folder_path):
         file_path = os.path.join(date_folder_path, file_name)
@@ -665,7 +677,8 @@ def check():
     if not transformer_data and not transformer_settings:
         return jsonify({'message': 'Tranformer data and settings have not been inputed'})
     
-    folder_path = 'C:/xampp/htdocs/monthly_report/visualisasi/uploads/'
+    current_path = os.getcwd()
+    folder_path = current_path + '/uploads'
     customer_folder_path = os.path.join(folder_path, selected_company)
     date_folder_path = os.path.join(customer_folder_path, date)
     if not os.path.exists(date_folder_path):
@@ -685,8 +698,9 @@ def make_pdf():
     start_time = time.time()
     selected_company = request.form.get('selectedCompany')
     date = request.form.get('date')
+    current_path = os.getcwd()
 
-    folder_path = 'C:/xampp/htdocs/monthly_report/visualisasi/uploads/'
+    folder_path = current_path + '/uploads'
     customer_folder_path = os.path.join(folder_path, selected_company)
     date_folder_path = os.path.join(customer_folder_path, date)
 
