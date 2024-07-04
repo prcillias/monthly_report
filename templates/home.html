@@ -53,9 +53,6 @@
         }
 
         .navbar-nav .nav-item:hover {
-            /* background-color: rgba(255, 228, 207, 0.2);
-            border-radius: 10px;
-            height: 33px; */
             font-weight: bold;
             
         }
@@ -65,7 +62,6 @@
         .container {
             display: flex;
             justify-content: center;
-            /* align-items: center; */
             height: 86vh;
             margin-top: 15px;
         }
@@ -85,8 +81,6 @@
         .form-right {
             flex: 2;
             padding: 20px;
-            /* display: flex; */
-            /* flex-wrap: wrap; */
             background-color: #fff;
             overflow: auto;
         }
@@ -553,170 +547,6 @@
                     }
                 })
 
-                // Insert
-                // $("#insert").on("click", function() { 
-                //     $("#judul_tdata").text("Insert Transformer Data");
-                //     $("#judul_tsettings").text("Insert Transformer Settings");
-                //     $("#insert").addClass("d-none");
-                //     $("#edit").addClass("d-none");
-                //     $("#addNewCust").addClass("d-none");
-                //     $("#search").addClass("d-none");
-                //     $("#save").removeClass("d-none"); 
-                //     $("#cancel").removeClass("d-none"); 
-                //     $('.form-control.tdata').val(''); 
-                //     $('.form-control.tsettings').val('');
-                //     $(".tdata, .tsettings").removeAttr("readonly");
-                //     $("#dropdown").prop("disabled", true);
-                //     selectedCompany = $('#dropdown').val()
-                //     // inputDate = $("#inputDate").val()
-                //     // $("#inputDate").val('')
-
-
-                //     $("#cancel").on("click", function() { 
-                //         $("#judul_tdata").text("Transformer Data");
-                //         $("#judul_tsettings").text("Transformer Settings");
-                //         $("#edit").removeClass("d-none");
-                //         $("#insert").removeClass("d-none");
-                //         $("#addNewCust").removeClass("d-none");
-                //         $("#save").addClass("d-none"); 
-                //         $("#cancel").addClass("d-none"); 
-                //         $(".tdata, .tsettings").attr("readonly", true);
-                //         // $("#inputDate").val(inputDate)
-                //         $("#dropdown").prop("disabled", false);
-                //         getTheData(selectedCompany)
-
-                //     })
-
-                //     $("#save").on("click", function() {
-                //         selectedCompany = $('#dropdown').val()
-                //         // inputDate = $("#inputDate").val()
-
-                //         var allInputsFilled = true;
-                        
-                //         // if (!inputDate) {
-                //         //     Swal.fire({
-                //         //         icon: 'warning',
-                //         //         title: 'Date not selected',
-                //         //         text: 'Please select a date'
-                //         //     })
-                //         //     return;
-                //         // }
-
-                //         $(".tdata, .tsettings").each(function() {
-                //             if (!$(this).val()) {
-                //                 allInputsFilled = false;
-                //                 return false;
-                //             } else {
-                //                 var par = $(this).attr('id');
-                //                 var value = $(this).val();
-                                
-                //                 if ($(this).hasClass("tdata")) {
-                //                     trafo_data['tdata'][par] = value;
-                //                 } else {
-                //                     trafo_data['tsettings'][par] = value;
-                //                 }
-                //             }
-                //         });
-
-                //         if (allInputsFilled) {
-                //             $.ajax({
-                //                 url: "/insert-data",
-                //                 type: "POST",
-                //                 contentType: 'application/json',
-                //                 data: JSON.stringify({
-                //                     // date: inputDate,
-                //                     selectedCompany: selectedCompany,
-                //                     tdata: trafo_data.tdata,
-                //                     tsettings: trafo_data.tsettings,
-                //                     type: 'existing'
-                //                 }),
-                //                 success: function(result) {
-                //                     if (result.status == 'success') {
-                //                         Swal.fire({
-                //                             icon: 'success',
-                //                             title: 'Success!',
-                //                             text: 'Data has been successfully inserted',
-                //                             timer: 3000
-                //                         });
-                //                         $("#judul_tdata").text("Transformer Data");
-                //                         $("#judul_tsettings").text("Transformer Settings");
-                //                         $("#edit").removeClass("d-none");
-                //                         $("#insert").removeClass("d-none");
-                //                         $("#addNewCust").removeClass("d-none");
-                //                         $("#save").addClass("d-none"); 
-                //                         $("#cancel").addClass("d-none"); 
-                //                         $(".tdata, .tsettings").attr("readonly", true);
-                //                         // $("#inputDate").val(inputDate)
-                //                         getTheData(selectedCompany)
-                //                     } else if (result.status == 'edit') {
-                //                         Swal.fire({
-                //                             icon: 'warning',
-                //                             title: 'Data already exist!',
-                //                             text: 'Edit the data instead?',
-                //                             showCancelButton: true,
-                //                             confirmButtonText: 'Yes',
-                //                             cancelButtonText: 'No'
-                //                         }).then((result) => {
-                //                             if (result.isConfirmed) {
-                //                                 $("#judul_tdata").text("Edit Transformer Data");
-                //                                 $("#judul_tsettings").text("Edit Transformer Settings");
-                //                                 $(".tdata, .tsettings").removeAttr("readonly");
-                //                                 if (changedValues.length <= 0) {
-                //                                     Swal.fire({
-                //                                         icon: 'info',
-                //                                         title: 'No Changes Made',
-                //                                         text: 'There were no changes to save',
-                //                                     })
-                //                                 } else {
-                //                                     selectedCompany = $('#dropdown').val()
-                //                                     // inputDate = $("#inputDate").val()
-
-                //                                     // if (selectedCompany == 'Choose a customer') {
-                //                                     //     alert('choose a cust first')
-                //                                     //     return
-                //                                     // }
-
-                //                                     // if (inputDate == '') {
-                //                                     //     alert('inputdate first')
-                //                                     //     return
-                //                                     // }
-
-                //                                     $.ajax({
-                //                                         url: "/update-data",
-                //                                         type: "POST",
-                //                                         contentType: 'application/json',
-                //                                         data: JSON.stringify({
-                //                                             changedValues: changedValues,
-                //                                             // date: inputDate,
-                //                                             selectedCompany: selectedCompany
-                //                                         }),
-                //                                         success: function(result) {
-                //                                             Swal.fire({
-                //                                                 icon: 'success',
-                //                                                 title: 'Success!',
-                //                                                 text: 'Data has been successfully edited',
-                //                                                 timer: 3000
-                //                                             });
-                //                                         }
-                //                                     });
-                //                                 }
-                //                             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                //                                 // balik
-                //                             }
-                //                         });
-                //                     }
-                //                 }
-                //             });
-                //         } else {
-                //             Swal.fire({
-                //                 icon: 'warning',
-                //                 title: 'Incomplete Data',
-                //                 text: 'Please fill in all fields'
-                //             })
-                //         }
-                //     })
-                // })
-
                 // Edit
                 $("#edit").on("click", function() {
                     $("#judul_tdata").text("Edit Transformer Data");
@@ -860,15 +690,6 @@
                             return;
                         }
                         
-                        // if (!inputDate) {
-                        //     Swal.fire({
-                        //         icon: 'warning',
-                        //         title: 'Date is not selected!',
-                        //         text: 'Please select a date',
-                        //     })
-                        //     return;
-                        // }
-
                         allInputsFilled = true;
 
                         $(".tdata, .tsettings").each(function() {
@@ -894,7 +715,6 @@
                                 type: "POST",
                                 contentType: 'application/json',
                                 data: JSON.stringify({
-                                    // date: inputDate,
                                     selectedCompany: selectedCompany,
                                     tdata: trafo_data.tdata,
                                     tsettings: trafo_data.tsettings,
@@ -911,13 +731,11 @@
                                         $("#judul_tdata").text("Transformer Data");
                                         $("#judul_tsettings").text("Transformer Settings");
                                         $("#edit").removeClass("d-none");
-                                        // $("#insert").removeClass("d-none");
                                         $("#addNewCust").removeClass("d-none");
                                         $("#save").addClass("d-none"); 
                                         $("#cancel").addClass("d-none"); 
                                         $("#cancelAddCust").addClass("d-none"); 
                                         $(".tdata, .tsettings").attr("readonly", true);
-                                        // $("#inputDate").val(inputDate)
                                         getTheData(selectedCompany)
                                     } else if (result.status == 'edit') {
                                         Swal.fire({
@@ -935,19 +753,16 @@
                                                 $("#cancelAddCust").addClass("d-none");
                                                 $("#add").addClass("d-none");
                                                 $("#edit").addClass("d-none");
-                                                // $("#insert").addClass("d-none");
                                                 $("#save").removeClass("d-none"); 
                                                 $("#cancel").removeClass("d-none"); 
                                                 $(".tdata, .tsettings").removeAttr("readonly");
-                                                // $("#inputDate").attr("readonly", true);
                                                 $("#inputNama").attr("readonly", true);
 
                                                 $.ajax({
                                                     url: "/get-data",
                                                     type: "POST",
                                                     data: {
-                                                        selectedCompany: selectedCompany,
-                                                        // date: inputDate
+                                                        selectedCompany: selectedCompany
                                                     },
                                                     success: function(result) {
                                                         if (result.status == 'success') {
@@ -1018,14 +833,12 @@
                                                         })
                                                     } else {
                                                         selectedCompany = $('#inputNama').val()
-                                                        // inputDate = $("#inputDate").val()
                                                         $.ajax({
                                                             url: "/update-data",
                                                             type: "POST",
                                                             contentType: 'application/json',
                                                             data: JSON.stringify({
                                                                 changedValues: changedValues,
-                                                                // date: inputDate,
                                                                 selectedCompany: selectedCompany
                                                             }),
                                                             success: function(result) {
@@ -1044,14 +857,12 @@
                                                 $("#cancel").on("click", function() { 
                                                     $("#judul_tdata").text("Transformer Data");
                                                     $("#judul_tsettings").text("Transformer Settings");
-                                                    // $("#insert").removeClass("d-none");
                                                     $("#addNewCust").removeClass("d-none");
                                                     $("#edit").removeClass("d-none");
                                                     $("#save").addClass("d-none"); 
                                                     $("#cancel").addClass("d-none"); 
                                                     $(".tdata, .tsettings").attr("readonly", true);
                                                     $("#dropdown").prop("disabled", false);
-                                                    // $("#inputDate").removeAttr("readonly");
                                                     $('input').val('');
                                                 })
                                             } else if (result.dismiss === Swal.DismissReason.cancel) {

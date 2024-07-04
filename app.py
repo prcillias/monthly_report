@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, abort, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_file, abort
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -18,8 +18,6 @@ import plotly.io as pio
 import time
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
-from pathlib import Path
 import calendar
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential, load_model
@@ -51,9 +49,6 @@ statistics = {
     'Van': {'nama': 'Tegangan dari fase U ke fase netral'},
     'Vbn': {'nama': 'Tegangan dari fase V ke fase netral'},
     'Vcn': {'nama': 'Tegangan dari fase W ke fase netral'},
-    # 'Vab': {'nama': 'Tegangan dari Fase U ke Fase V'},
-    # 'Vbc': {'nama': 'Tegangan dari Fase V ke Fase W'},
-    # 'Vca': {'nama': 'Tegangan dari Fase W ke Fase U'},
     'Ia': {'nama': 'Arus Fase U'},
     'Ib': {'nama': 'Arus Fase V'},
     'Ic': {'nama': 'Arus Fase W'},
@@ -91,9 +86,7 @@ not_used = []
 
 press_type = 0 # 0 = konservator (0 semua), 1 konservator (ada yg > 0), 2
 press_value = {}
-
 progress = 0
-
 
 class TransformerData(db.Model):
     nama = db.Column(db.String(255), primary_key=True)
@@ -482,9 +475,6 @@ def upload_file():
 @app.route('/get-data', methods=['POST'])
 def get_data():
     selected_company = request.form.get('selectedCompany')
-    # date = request.form.get('date')
-    # transformer_data = TransformerData.query.filter(and_(TransformerData.nama == selected_company, TransformerData.date == date)).order_by(TransformerData.no.desc()).first()
-    # transformer_settings = TransformerSettings.query.filter(and_(TransformerSettings.nama == selected_company, TransformerSettings.date == date)).order_by(TransformerSettings.no.desc()).first()
     transformer_data = TransformerData.query.filter(TransformerData.nama == selected_company).first()
     transformer_settings = TransformerSettings.query.filter(TransformerSettings.nama == selected_company).first()
     if transformer_data and transformer_settings:
@@ -695,7 +685,7 @@ def check():
 def make_pdf():
     global progress
     progress = 0
-    total_task = 50
+    total_task = 53
     current_progress = (1/total_task)*100
     start_time = time.time()
     selected_company = request.form.get('selectedCompany')
@@ -1334,6 +1324,7 @@ def make_pdf():
             {"role": "user", "content": prompt_kesimpulan}
         ]
     )
+    progress += current_progress
     conclusion = completion.choices[0].message.content
     # conclusion = 'Berdasarkan informasi yang diberikan mengenai kondisi trafo PT Bambang Djaja selama bulan November, kesimpulannya adalah bahwa trafo perusahaan menunjukkan tren suhu oli, suhu busbar, suhu winding, tegangan antar fase, arus fase, daya aktif, daya reaktif, daya semu, power factor, frekuensi, arus netral, penggunaan energi listrik, reactive energy, total harmonic distortion, K-rated, dan deRating berada dalam rentang yang stabil dan aman. Meskipun terdapat sedikit variasi atau deviasi dari nilai rata-rata atau setting maksimal yang telah ditentukan, kondisi trafo secara keseluruhan dapat dikatakan baik dan operasionalnya berjalan efisien serta sesuai dengan standar kapasitas yang diinginkan. Perusahaan perlu terus memantau dan melakukan pemeliharaan secara berkala untuk memastikan performa trafo tetap optimal dan aman untuk kebutuhan operasional.'
     print(conclusion)
@@ -1352,12 +1343,14 @@ def make_pdf():
             {"role": "user", "content": prompt_saran}
         ]
     )
+    progress += current_progress
     suggestion = completion.choices[0].message.content
     # suggestion = 'Beberapa saran yang dapat diberikan adalah:\n\n1. Optimalkan Efisiensi Energi: Meskipun data menunjukkan efisiensi yang baik dalam penggunaan energi, perusahaan dapat terus memantau dan mengoptimalkan penggunaan energi untuk mengurangi potensi pemborosan energi yang tidak perlu. Langkah-langkah seperti melakukan audit energi dan memperbarui sistem untuk meningkatkan efisiensi dapat membantu perusahaan menghemat biaya dan mendukung keberlanjutan.\n2. Perawatan dan Monitoring Harmonisa: Karena terdapat variasi distorsi harmonik yang signifikan pada beberapa data, perusahaan disarankan untuk meningkatkan perawatan dan monitoring terhadap harmonisa pada trafo. Hal ini dapat dilakukan dengan mengikuti pedoman perawatan yang direkomendasikan dan menggunakan perangkat pemantauan yang tepat untuk memastikan kualitas tegangan dan arus yang optimal.\n3. Pemantauan dan Peningkatan Faktor Daya: Meskipun faktor daya pada fasa-fasa tertentu cenderung stabil, perusahaan dapat memantau dan mengoptimalkan faktor daya pada setiap fasa untuk meningkatkan efisiensi sistem kelistrikan mereka. Langkah-langkah seperti instalasi peralatan yang lebih efisien atau penyempurnaan sistem distribusi dapat membantu meningkatkan faktor daya secara keseluruhan.'
     print(suggestion)
     suggestion_poin = re.findall(r'\d+\.\s+.*?(?=\n\d+\.|\Z)', suggestion, re.DOTALL)
     
     forecast_kwh = forecast_data(selected_company, date)
+    progress += current_progress
     answers['kWhInp'] = f"Berdasarkan data historis penggunaan sebelumnya, diperkirakan penggunaan kWh dari trafo pada bulan depan akan mencapai {forecast_kwh} kWh."
     summary_answers['kWhInp'] = " "
     end_time_generate_suggestion = time.time()

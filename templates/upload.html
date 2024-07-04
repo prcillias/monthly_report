@@ -238,41 +238,6 @@
             </div>
         </div>
     </div>
-    <!-- 
-    <div class="container container-upload mt-3 align-items-center">
-        
-        <div class="row justify-content-center">
-            <div class="col-md-2">
-
-            </div>
-            <div class="col-md-4">
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                    <div class="input-group mb-3">
-                        <input type="file" class="form-control" id="inputGroupFile02" name="excel_file" multiple>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-4 justify-content-end">
-                <button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
-                <button type="button" class="btn btn-danger" id="deleteAllButton">Delete All</button>
-
-            </div>
-        </div>
-    </div>
-
-    <div class="container container-table align-items-center">
-        <table id="fileTable" class="table display">
-            <thead>
-                <tr>
-                    <th>File Name</th>
-                </tr>
-            </thead>
-            <tbody>
-
-            </tbody>
-        </table>
-    </div> -->
 
     <script>
         
@@ -523,26 +488,6 @@
 
                 if (selectedCompany != 'Choose a customer' && date != '') {
                     listFiles(selectedCompany, date);
-
-
-                    // fetch(`/list_files?selectedCompany=${selectedCompany}&date=${date}`)
-                    //     .then(response => response.json())
-                    //     .then(data => {
-                    //         if (data.files.length > 0) {
-                    //             const tableData = data.files.map(file => [file]);
-                    //             $('#fileTable').DataTable({
-                    //                 data: tableData,
-                    //                 columns: [
-                    //                     { title: "File Name" }
-                    //                 ]
-                    //             });
-                    //         } else {
-                    //             $('#fileTable tbody').html('<tr><td colspan="1">No data uploaded</td></tr>');
-                    //         }
-                    //     })
-                    //     .catch(error => {
-                    //         alert('Error listing files');
-                    //     });
 
                 } else {
                     Swal.fire({
